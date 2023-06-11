@@ -1,0 +1,30 @@
+CXX=g++
+CXXFLAGS=-std=c++17 -g -pedantic -Wall -Wextra -fsanitize=address,undefined -fno-omit-frame-pointer
+LDLIBS=-lpthread -lrt
+
+# 0 for output in autograder, 1 for no output in autograder
+OUT=1
+
+
+%.o: %.cpp %.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+FIFO: common.o RequestChannel.o FIFORequestChannel.o
+	$(CXX) $(CXXFLAGS) -o server server.cpp $^ $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o client client.cpp $^ $(LDLIBS)
+
+MQ: common.o RequestChannel.o FIFORequestChannel.o MQRequestChannel.o
+	$(CXX) $(CXXFLAGS) -o server server.cpp $^ $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o client client.cpp $^ $(LDLIBS)
+
+SHM: common.o RequestChannel.o FIFORequestChannel.o MQRequestChannel.o SHMRequestChannel.o
+	$(CXX) $(CXXFLAGS) -o server server.cpp $^ $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o client client.cpp $^ $(LDLIBS)
+
+
+.PHONY: clean
+
+clean:
+	rm -f server client fifo* data*_* *.tst *.o *.csv received/*
+	rm -f /dev/mqueue/*data*_* /dev/mqueue/*control*
+	rm -f /dev/shm/*data*_* /dev/shm/*control*
